@@ -19,9 +19,9 @@ Then visit `http://localhost:9001/` in your browser
 - [x] createElement
 - [x] createVdom
 - [x] render
-- [] diff
-- [] patch
-- [] interactional examples
+- [ ] diff
+- [ ] patch
+- [ ] interactional examples
 
 ## MIT License
 
