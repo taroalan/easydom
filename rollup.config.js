@@ -5,7 +5,7 @@ const { uglify } = require('rollup-plugin-uglify');
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: './src/index.js',
+  input: production ? './src/index.js' : './src/example.js',
   output: {
     name: 'vdom',
     file: 'public/bundle.js',

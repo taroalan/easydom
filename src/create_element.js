@@ -2,14 +2,20 @@
 
 function createElement(type, props, children) {
   let element = {
-    key: (props && props.key) | null,
+    key: (props && props.key) || null,
     type: type,
-    props: props ? props : {}
+    props: props ? props : {},
+    children: children || []
   };
 
-  if (children && children.length >= 1) {
-    element.children = children;
-  }
+
+  let count = 0;
+
+  element.children.forEach((child, i) => {
+    count++;
+  });
+
+  element.count = count;
 
   return element;
 }

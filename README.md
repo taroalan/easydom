@@ -19,10 +19,14 @@ Then visit `http://localhost:9001/` in your browser
 - [x] createElement
 - [x] createVdom
 - [x] render
-- [ ] diff
-- [ ] patch
-- [ ] interactional examples
+- [x] diff
+- [x] patch
+- [x] interactional examples
 
-## MIT License
+## Reference
+
+[simple-virtual-dom](https://github.com/livoras/simple-virtual-dom)
+
+## License
 
 [MIT License](./LICENSE)
