@@ -1,73 +1,73 @@
 import {
+  createVNode,
   createElement,
-  createVdom,
   render,
   diff,
   patch
 } from './index';
 
-// jsx 被 babel 编译后会转化为 createElement 的形式，
-let elements = createElement('div', { id: 'box' }, [
-  createElement('p', { className: 'message', style: { color: '#36f' } }, ['hello walker']),
-  createElement('ul', { className: 'lists' }, [
-    createElement('li', null, [`Item 1`]),
-    createElement('li', null, [`Item 2`]),
-    createElement('li', null, [`Item 3`])
+// jsx 被 babel 编译后的格式
+let vtree = createVNode('div', { id: 'box' }, [
+  createVNode('p', { className: 'message', style: { color: '#36f' } }, ['hello walker']),
+  createVNode('ul', { className: 'lists' }, [
+    createVNode('li', null, [`Item 1`]),
+    createVNode('li', null, [`Item 2`]),
+    createVNode('li', null, [`Item 3`])
   ])
 ]);
 
+console.log('vtree: ', vtree);
 
-console.log('elements: ', elements);
+let rootNode = createElement(vtree);
 
-let vdom = createVdom(elements);
+console.log('rootNode: ', rootNode);
 
-console.log('vdom: ', vdom);
-
-render(vdom, document.getElementById('app'));
+render(rootNode, document.getElementById('app'));
 
 
 /*
-let newElements = createElement('div', { className: 'new-box', id: 'box' }, [
-  createElement('h1', { id: 'title' }, ['This is title']),
-  createElement('p', { style: { color: '#f80' } }, ['hello walker, nice to meet you']),
-  createElement('ul', { className: 'lists new-lists' }, [
-    createElement('li', null, [`Item 1`]),
-    createElement('li', null, [`Item 4`]),
+let newVtree = createVNode('div', { className: 'new-box', id: 'box' }, [
+  createVNode('h1', { id: 'title' }, ['This is title']),
+  createVNode('p', { style: { color: '#f80' } }, ['hello walker, nice to meet you']),
+  createVNode('ul', { className: 'lists new-lists' }, [
+    createVNode('li', null, [`Item 1`]),
+    createVNode('li', null, [`Item 4`]),
   ])
 ]);
 
-let patches = diff(elements, newElements);
+let patches = diff(vtree, newVtree);
 
 console.log('patches: ', patches);
 
-patch(vdom, patches);
+patch(rootNode, patches);
 */
+
 
 let count = 0;
 
-function createEl() {
+function createVtree() {
 
   let items = [];
 
   for(let i = 0; i < count; i++) {
-    items.push(createElement('li', null, [`Item ${i}`]));
+    items.push(createVNode('li', null, [`Item ${i}`]));
   }
 
   let color = (count % 2 === 0) ? '#36f': '#f80';
 
-  return createElement('div', { className: 'new-box', id: 'box' }, [
-    createElement('h1', { id: 'title' }, ['This is title']),
-    createElement('p', { style: { color: color } }, [`hello walker, nice to meet you ${count}`]),
-    createElement('ul', { className: 'lists new-lists' }, items)
+  return createVNode('div', { className: 'new-box', id: 'box' }, [
+    createVNode('h1', { id: 'title' }, ['This is title']),
+    createVNode('p', { style: { color: color } }, [`hello walker, nice to meet you ${count}`]),
+    createVNode('ul', { className: 'lists new-lists' }, items)
   ]);
 }
 
 function renderTest() {
-  let newElements = createEl();
-  let patches = diff(elements, newElements);
+  let newVtree = createVtree();
+  let patches = diff(vtree, newVtree);
   console.log('patches: ', patches);
-  patch(vdom, patches);
-  elements = newElements;
+  patch(rootNode, patches);
+  vtree = newVtree;
 }
 
 
@@ -86,7 +86,5 @@ document.getElementById('btn-remove').onclick = function () {
   if (count < 0) count = 0;
   renderTest();
 };
-
-
 
 

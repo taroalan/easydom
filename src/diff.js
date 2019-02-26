@@ -1,11 +1,11 @@
 import utils from './utils';
 import { REPLACE, REORDER, PROPS, TEXT } from './constants';
 
-function diff(node, newNode) {
+function diff(tree, newTree) {
   let index = 0;
   let patches = {};
 
-  diffNode(node, newNode, index, patches);
+  diffNode(tree, newTree, index, patches);
 
   return patches;
 }

@@ -16,16 +16,18 @@ Then visit `http://localhost:9001/` in your browser
 ## Todos
 
 - [x] project scaffold
-- [x] createElement
-- [x] createVdom
+- [x] create visual node
+- [x] create element
 - [x] render
 - [x] diff
 - [x] patch
 - [x] interactional examples
+- [ ] optimize diff and patch
 
 ## Reference
 
-[simple-virtual-dom](https://github.com/livoras/simple-virtual-dom)
++ [React](https://github.com/facebook/react/)
++ [virtual-dom](https://github.com/Matt-Esch/virtual-dom)
 
 ## License
 

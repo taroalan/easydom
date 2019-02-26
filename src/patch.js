@@ -1,6 +1,6 @@
 import utils from './utils';
 import { REPLACE, REORDER, PROPS, TEXT } from './constants';
-import createVdom from './create_vdom';
+import createElement from './create_element';
 
 function patch(root, patches) {
   let steps = { index: 0 };
@@ -30,7 +30,7 @@ function applyPatches(node, patch) {
         // console.log(node, item.node, 'replace');
         let newNode = utils.isString(item.node)
           ? document.createTextNode(item.node)
-          : createVdom(item.node);
+          : createElement(item.node);
         node.parentNode.replaceChild(newNode, node);
         break;
       case REORDER:
@@ -74,7 +74,7 @@ function reorderChildren(node, moves) {
       let insertNode = maps[move.item.key]
         ? maps[move.item.key].cloneNode(true)
         : (typeof move.item === 'object')
-          ? createVdom(move.item)
+          ? createElement(move.item)
           : document.createTextNode(move.item);
       nodeList.splice(index, 0, insertNode);
       node.insertBefore(insertNode, node.childNodes[index] || null);

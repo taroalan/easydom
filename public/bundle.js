@@ -3,20 +3,20 @@
   factory();
 }(function () { 'use strict';
 
-  // 参考 React 实现一个精简版的 createElement 方法
-  function createElement(type, props, children) {
-    let element = {
+  // 参考 React 实现一个精简版的 createVNode 方法
+  function createVNode(type, props, children) {
+    let vnode = {
       key: props && props.key || null,
       type: type,
       props: props ? props : {},
       children: children || []
     };
     let count = 0;
-    element.children.forEach((child, i) => {
+    vnode.children.forEach((child, i) => {
       count++;
     });
-    element.count = count;
-    return element;
+    vnode.count = count;
+    return vnode;
   }
 
   let utils = {};
@@ -49,12 +49,12 @@
     }
   };
 
-  function createVdom(element) {
+  function createElement(vnode) {
     let {
       type,
       props,
       children
-    } = element; // type 类型判断，按照 React 的套路，可能是html标签、文本、函数、React组件，
+    } = vnode; // type 类型判断，按照 React 的套路，可能是html标签、文本、函数、React组件，
     // 这里暂时只处理html标签及文本的情况
     // jsx 解析后文本为字符串，html标签会解析为对象
 
@@ -73,7 +73,7 @@
       }
 
       if (utils.isObject(child)) {
-        elChild = createVdom(child);
+        elChild = createElement(child);
       }
 
       el.appendChild(elChild);
@@ -94,10 +94,10 @@
 
   const TEXT = 'TEXT';
 
-  function diff(node, newNode) {
+  function diff(tree, newTree) {
     let index = 0;
     let patches = {};
-    diffNode(node, newNode, index, patches);
+    diffNode(tree, newTree, index, patches);
     return patches;
   }
 
@@ -305,7 +305,7 @@
       switch (item.type) {
         case REPLACE:
           // console.log(node, item.node, 'replace');
-          let newNode = utils.isString(item.node) ? document.createTextNode(item.node) : createVdom(item.node);
+          let newNode = utils.isString(item.node) ? document.createTextNode(item.node) : createElement(item.node);
           node.parentNode.replaceChild(newNode, node);
           break;
 
@@ -351,74 +351,74 @@
 
         nodeList.splice(index, 1);
       } else if (move.type === REORDER) {
-        let insertNode = maps[move.item.key] ? maps[move.item.key].cloneNode(true) : typeof move.item === 'object' ? createVdom(move.item) : document.createTextNode(move.item);
+        let insertNode = maps[move.item.key] ? maps[move.item.key].cloneNode(true) : typeof move.item === 'object' ? createElement(move.item) : document.createTextNode(move.item);
         nodeList.splice(index, 0, insertNode);
         node.insertBefore(insertNode, node.childNodes[index] || null);
       }
     });
   }
 
-  let elements = createElement('div', {
+  let vtree = createVNode('div', {
     id: 'box'
-  }, [createElement('p', {
+  }, [createVNode('p', {
     className: 'message',
     style: {
       color: '#36f'
     }
-  }, ['hello walker']), createElement('ul', {
+  }, ['hello walker']), createVNode('ul', {
     className: 'lists'
-  }, [createElement('li', null, [`Item 1`]), createElement('li', null, [`Item 2`]), createElement('li', null, [`Item 3`])])]);
-  console.log('elements: ', elements);
-  let vdom = createVdom(elements);
-  console.log('vdom: ', vdom);
-  render(vdom, document.getElementById('app'));
+  }, [createVNode('li', null, [`Item 1`]), createVNode('li', null, [`Item 2`]), createVNode('li', null, [`Item 3`])])]);
+  console.log('vtree: ', vtree);
+  let rootNode = createElement(vtree);
+  console.log('rootNode: ', rootNode);
+  render(rootNode, document.getElementById('app'));
   /*
-  let newElements = createElement('div', { className: 'new-box', id: 'box' }, [
-    createElement('h1', { id: 'title' }, ['This is title']),
-    createElement('p', { style: { color: '#f80' } }, ['hello walker, nice to meet you']),
-    createElement('ul', { className: 'lists new-lists' }, [
-      createElement('li', null, [`Item 1`]),
-      createElement('li', null, [`Item 4`]),
+  let newVtree = createVNode('div', { className: 'new-box', id: 'box' }, [
+    createVNode('h1', { id: 'title' }, ['This is title']),
+    createVNode('p', { style: { color: '#f80' } }, ['hello walker, nice to meet you']),
+    createVNode('ul', { className: 'lists new-lists' }, [
+      createVNode('li', null, [`Item 1`]),
+      createVNode('li', null, [`Item 4`]),
     ])
   ]);
 
-  let patches = diff(elements, newElements);
+  let patches = diff(vtree, newVtree);
 
   console.log('patches: ', patches);
 
-  patch(vdom, patches);
+  patch(rootNode, patches);
   */
 
   let count = 0;
 
-  function createEl() {
+  function createVtree() {
     let items = [];
 
     for (let i = 0; i < count; i++) {
-      items.push(createElement('li', null, [`Item ${i}`]));
+      items.push(createVNode('li', null, [`Item ${i}`]));
     }
 
     let color = count % 2 === 0 ? '#36f' : '#f80';
-    return createElement('div', {
+    return createVNode('div', {
       className: 'new-box',
       id: 'box'
-    }, [createElement('h1', {
+    }, [createVNode('h1', {
       id: 'title'
-    }, ['This is title']), createElement('p', {
+    }, ['This is title']), createVNode('p', {
       style: {
         color: color
       }
-    }, [`hello walker, nice to meet you ${count}`]), createElement('ul', {
+    }, [`hello walker, nice to meet you ${count}`]), createVNode('ul', {
       className: 'lists new-lists'
     }, items)]);
   }
 
   function renderTest() {
-    let newElements = createEl();
-    let patches = diff(elements, newElements);
+    let newVtree = createVtree();
+    let patches = diff(vtree, newVtree);
     console.log('patches: ', patches);
-    patch(vdom, patches);
-    elements = newElements;
+    patch(rootNode, patches);
+    vtree = newVtree;
   }
 
   document.getElementById('btn-start').onclick = function () {
