@@ -1,3 +1,9 @@
+// 删除节点
+export const REMOVE = 'REMOVE';
+
+// 插入节点
+export const INSERT = 'INSERT';
+
 // patchType 替换节点
 export const REPLACE = 'REPLACE';
 

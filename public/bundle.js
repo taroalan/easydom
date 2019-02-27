@@ -3,22 +3,6 @@
   factory();
 }(function () { 'use strict';
 
-  // 参考 React 实现一个精简版的 createVNode 方法
-  function createVNode(type, props, children) {
-    let vnode = {
-      key: props && props.key || null,
-      type: type,
-      props: props ? props : {},
-      children: children || []
-    };
-    let count = 0;
-    vnode.children.forEach((child, i) => {
-      count++;
-    });
-    vnode.count = count;
-    return vnode;
-  }
-
   let utils = {};
 
   utils.isType = (type, target) => {
@@ -49,35 +33,52 @@
     }
   };
 
+  // 参考 React 实现一个精简版的 createVNode 方法
+
+  function createVNode(type, props, ...children) {
+    let vnode = {
+      key: props && props.key || null,
+      type: type,
+      props: props ? props : {},
+      children
+    };
+    let count = 0;
+    vnode.children.forEach(child => {
+      count++;
+    }); // 标记当前节点下面有几个子节点
+
+    vnode.count = count;
+    return vnode;
+  }
+
   function createElement(vnode) {
     let {
       type,
       props,
       children
-    } = vnode; // type 类型判断，按照 React 的套路，可能是html标签、文本、函数、React组件，
+    } = vnode; // type 类型判断，按照 React 的套路，可能是html标签(String)、函数(Function)、React组件(Component)，
     // 这里暂时只处理html标签及文本的情况
-    // jsx 解析后文本为字符串，html标签会解析为对象
+    // jsx 解析后文本为字符串(不再有子节点) children: ['text']
+    // html标签会解析为对象(需要再去查看子节点) { type: 'div', props: { id: 'container' }, children: [...]}
+
+    if (utils.isString(vnode)) {
+      return document.createTextNode(vnode);
+    }
 
     let el = document.createElement(type);
     utils.setAttrs(el, props);
 
     if (!children) {
       return el;
-    }
+    } // 常规写法:
+
 
     children.forEach(child => {
-      let elChild;
+      el.appendChild(createElement(child));
+    }); // 精简写法:
+    // let appendChild = el.appendChild.bind(el);
+    // children.map(createElement).map(appendChild);
 
-      if (utils.isString(child)) {
-        elChild = document.createTextNode(child);
-      }
-
-      if (utils.isObject(child)) {
-        elChild = createElement(child);
-      }
-
-      el.appendChild(elChild);
-    });
     return el;
   }
 
@@ -85,7 +86,8 @@
     el.appendChild(vdom);
   }
 
-  // patchType 替换节点
+  // 删除节点
+
   const REPLACE = 'REPLACE'; // patchType 重新排列节点
 
   const REORDER = 'REORDER'; // patchType 属性修改
@@ -360,27 +362,27 @@
 
   let vtree = createVNode('div', {
     id: 'box'
-  }, [createVNode('p', {
+  }, createVNode('p', {
     className: 'message',
     style: {
       color: '#36f'
     }
-  }, ['hello walker']), createVNode('ul', {
+  }, 'hello walker'), createVNode('ul', {
     className: 'lists'
-  }, [createVNode('li', null, [`Item 1`]), createVNode('li', null, [`Item 2`]), createVNode('li', null, [`Item 3`])])]);
+  }, createVNode('li', null, 'Item 1'), createVNode('li', null, 'Item 2'), createVNode('li', null, 'Item 3')));
   console.log('vtree: ', vtree);
   let rootNode = createElement(vtree);
   console.log('rootNode: ', rootNode);
   render(rootNode, document.getElementById('app'));
   /*
-  let newVtree = createVNode('div', { className: 'new-box', id: 'box' }, [
-    createVNode('h1', { id: 'title' }, ['This is title']),
-    createVNode('p', { style: { color: '#f80' } }, ['hello walker, nice to meet you']),
-    createVNode('ul', { className: 'lists new-lists' }, [
-      createVNode('li', null, [`Item 1`]),
-      createVNode('li', null, [`Item 4`]),
-    ])
-  ]);
+  let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
+    createVNode('h1', { id: 'title' }, 'This is title'),
+    createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
+    createVNode('ul', { className: 'lists new-lists' },
+      createVNode('li', null, 'Item 1'),
+      createVNode('li', null, 'Item 4'),
+    )
+  );
 
   let patches = diff(vtree, newVtree);
 
@@ -388,6 +390,19 @@
 
   patch(rootNode, patches);
   */
+  // test jsx
+  // let vdom1 = (
+  //   <div class="box">
+  //     <p>1</p>
+  //     <span>666</span>
+  //     <ul>
+  //       <li>item1</li>
+  //       <li>item1</li>
+  //       <li>item1</li>
+  //     </ul>
+  //   </div>
+  // );
+  // console.log(vdom1);
 
   let count = 0;
 
@@ -395,22 +410,22 @@
     let items = [];
 
     for (let i = 0; i < count; i++) {
-      items.push(createVNode('li', null, [`Item ${i}`]));
+      items.push(createVNode('li', null, `Item ${i}`));
     }
 
     let color = count % 2 === 0 ? '#36f' : '#f80';
     return createVNode('div', {
       className: 'new-box',
       id: 'box'
-    }, [createVNode('h1', {
+    }, createVNode('h1', {
       id: 'title'
-    }, ['This is title']), createVNode('p', {
+    }, 'This is title'), createVNode('p', {
       style: {
         color: color
       }
-    }, [`hello walker, nice to meet you ${count}`]), createVNode('ul', {
+    }, `hello walker, nice to meet you ${count}`), createVNode('ul', {
       className: 'lists new-lists'
-    }, items)]);
+    }, ...items));
   }
 
   function renderTest() {
