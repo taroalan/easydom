@@ -6,6 +6,12 @@ import utils from './utils';
 
 function createVNode(type, props, ...children) {
 
+  // 嵌套 children 的特殊处理，二维变一维
+  // jsx 被 babel-plugin-transform-react-jsx 编译后的一种情况
+  if (children.length === 1 && utils.isArray(children[0])) {
+    children = !children[0].length ? [] : children[0];
+  }
+
   let vnode = {
     key: (props && props.key) || null,
     type: type,
@@ -13,14 +19,14 @@ function createVNode(type, props, ...children) {
     children
   };
 
-  let count = 0;
+  // let count = 0;
 
-  vnode.children.forEach((child) => {
-    count++;
-  });
+  // vnode.children.forEach((child) => {
+  //   count++;
+  // });
 
-  // 标记当前节点下面有几个子节点
-  vnode.count = count;
+  // // 标记当前节点下面有几个子节点
+  // vnode.count = count;
 
   return vnode;
 }

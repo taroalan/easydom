@@ -9,7 +9,7 @@
     return Object.prototype.toString.call(target) === `[object ${type}]`;
   };
 
-  ['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error'].forEach(type => {
+  ['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error', 'Null'].forEach(type => {
     utils[`is${type}`] = target => utils.isType(type, target);
   }); // props 中关于 html 属性的处理
   // 暂时只处理一部分，仅供演示
@@ -36,22 +36,32 @@
   // 参考 React 实现一个精简版的 createVNode 方法
 
   function createVNode(type, props, ...children) {
+    // 嵌套 children 的特殊处理，二维变一维
+    // jsx 被 babel-plugin-transform-react-jsx 编译后的一种情况
+    if (children.length === 1 && utils.isArray(children[0])) {
+      children = !children[0].length ? [] : children[0];
+    }
+
     let vnode = {
       key: props && props.key || null,
       type: type,
       props: props ? props : {},
       children
-    };
-    let count = 0;
-    vnode.children.forEach(child => {
-      count++;
-    }); // 标记当前节点下面有几个子节点
+    }; // let count = 0;
+    // vnode.children.forEach((child) => {
+    //   count++;
+    // });
+    // // 标记当前节点下面有几个子节点
+    // vnode.count = count;
 
-    vnode.count = count;
     return vnode;
   }
 
   function createElement(vnode) {
+    if (utils.isNull(vnode)) {
+      return document.createTextNode('');
+    }
+
     let {
       type,
       props,
@@ -71,14 +81,14 @@
     if (!children) {
       return el;
     } // 常规写法:
+    // children.forEach(child => {
+    //   el.appendChild(createElement(child));
+    // });
+    // 精简写法:
 
 
-    children.forEach(child => {
-      el.appendChild(createElement(child));
-    }); // 精简写法:
-    // let appendChild = el.appendChild.bind(el);
-    // children.map(createElement).map(appendChild);
-
+    let appendChild = el.appendChild.bind(el);
+    children.map(createElement).map(appendChild);
     return el;
   }
 
@@ -87,6 +97,9 @@
   }
 
   // 删除节点
+  const REMOVE = 'REMOVE'; // 插入节点
+
+  const INSERT = 'INSERT'; // patchType 替换节点
 
   const REPLACE = 'REPLACE'; // patchType 重新排列节点
 
@@ -97,57 +110,127 @@
   const TEXT = 'TEXT';
 
   function diff(tree, newTree) {
+    // console.log('diff');
     let index = 0;
     let patches = {};
-    diffNode(tree, newTree, index, patches);
-    return patches;
+    return diffNode(tree, newTree, index, patches);
   }
 
-  function diffNode(node, newNode, index, patches) {
-    let currentPatch = [];
+  function diffNode(oldNode, newNode, index, patches) {
+    // let patches = {};
+    let currentPatch = []; // console.log(`DIFF STEPS: ${index}: `, oldNode, newNode);
 
-    if (!newNode) {
-      // console.log('!newNode ', node);
-      return;
-    }
-
-    if (utils.isString(node) && utils.isString(newNode)) {
-      if (node !== newNode) {
+    if (!newNode) ; else if (utils.isString(oldNode) && utils.isString(newNode)) {
+      if (oldNode !== newNode) {
         currentPatch.push({
           type: TEXT,
           content: newNode
         });
       }
-    } else if (newNode.type === node.type && newNode.key === node.key) {
-      let propsPatches = diffProps(node.props, newNode.props);
+    } else if (oldNode && newNode && oldNode.type === newNode.type && oldNode.key === newNode.key) {
+      let propsPatches = diffProps(oldNode.props, newNode.props);
 
       if (Object.keys(propsPatches).length) {
         currentPatch.push({
           type: PROPS,
           props: propsPatches
         });
-      }
+      } // 对比子节点
+      // todo
 
-      diffChildren(node.children, newNode.children, index, patches, currentPatch);
+
+      diffChildren(oldNode.children, newNode.children, index, patches, currentPatch);
     } else {
       currentPatch.push({
         type: REPLACE,
         node: newNode
       });
-    } // console.log('currentPatch: ', currentPatch);
-    // console.log('patches: ', index);
+    } // console.log(`GOTO patchs[index] -- ${index}`);
 
 
     if (currentPatch.length) {
+      // console.log(patches);
       patches[index] = currentPatch;
     }
+
+    return patches;
+  }
+
+  function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
+    // console.log('oldChildren, newChildren: ', oldChildren, newChildren);
+    let diffs = diffList(oldChildren, newChildren); // console.log(diffs);
+
+    if (diffs.moves.length) {
+      currentPatch.push({
+        type: REORDER,
+        moves: diffs.moves
+      });
+    }
+
+    newChildren = diffs.nodes;
+
+    for (var i = 0; i < oldChildren.length || i < newChildren.length; i++) {
+      let oldNode = oldChildren[i];
+      let newNode = newChildren[i]; // console.log(`i -- index -- count : ${i}-${index}-${count}`);
+      // count++;
+
+      index++;
+      diffNode(oldNode, newNode, i + index, patches);
+    }
+  }
+
+  function diffList(oldList, newList) {
+    let moves = [];
+    let nodes = [];
+    oldList.forEach((item, i) => {
+      let newItem = newList[i] || null;
+      nodes.push(newItem);
+    }); // console.log(nodes);
+    // 去除 null
+
+    nodes.forEach((node, i) => {
+      if (node === null) {
+        moves.push({
+          index: i,
+          type: REPLACE
+        });
+        nodes.splice(i, 1);
+      }
+    });
+
+    if (nodes.length === 1 && nodes[0] === null) {
+      nodes = [];
+      moves.push({
+        index: nodes.length,
+        type: REPLACE
+      });
+    }
+
+    newList.forEach((item, i) => {
+      item = utils.isArray(item) ? item[0] : item;
+      let nodeItem = nodes[i];
+
+      if (nodeItem) ; else {
+        moves.push({
+          type: 'REORDER',
+          item,
+          index: i
+        });
+      }
+    }); // console.log('diffList nodes', nodes);
+    // console.log('diffList moves', moves);
+
+    return {
+      moves,
+      nodes
+    };
   }
 
   function diffProps(props, newProps) {
     let propsPatches = {};
 
     for (const key in props) {
-      if (newProps[key] !== props[key]) {
+      if (newProps.hasOwnProperty(key) && newProps[key] !== props[key]) {
         propsPatches[key] = newProps[key];
       }
     }
@@ -161,227 +244,139 @@
     return propsPatches;
   }
 
-  function diffChildren(children, newChildren, index, patches, currentPatch) {
-    let diffs = diffNodes(children, newChildren); // console.log(diffs);
-
-    newChildren = diffs.nodes;
-
-    if (diffs.moves.length) {
-      currentPatch.push({
-        type: REORDER,
-        moves: diffs.moves
-      });
-    }
-
-    let leftNode = null;
-    let currentNodeIndex = index;
-    children.forEach((child, i) => {
-      let newChild = newChildren[i];
-      currentNodeIndex = leftNode && leftNode.count ? currentNodeIndex + leftNode.count + 1 : currentNodeIndex + 1;
-      diffNode(child, newChild, currentNodeIndex, patches);
-      leftNode = child;
-    });
-  }
-
-  function diffNodes(nodes, newNodes) {
-    // if (!nodes || !newNodes) {
-    //   console.log(nodes, newNodes);
-    // }
-    let keyMap = buildKeyMap(nodes);
-    let newKeyMap = buildKeyMap(newNodes);
-    let _nodes = [];
-    let moves = [];
-    let nodeIndex = 0;
-    nodes.forEach(item => {
-      const key = item.key;
-
-      if (key) {
-        if (!newKeyMap.hasOwnProperty(key)) {
-          _nodes.push(null);
-        } else {
-          _nodes.push(newNodes[key]);
-        }
-      } else {
-        _nodes.push(newNodes[nodeIndex++] || null);
-      }
-    }); // console.log(oldMap);
-    // console.log(_nodes);
-
-    _nodes.forEach((item, i) => {
-      if (item === null) {
-        moves.push(remove(i));
-
-        _nodes.splice(i, 1);
-      }
-    }); // console.log('-----');
-
-
-    let j = 0;
-    newNodes.forEach((item, i) => {
-      let key = item.key;
-      let _nodeItem = _nodes[j];
-
-      if (_nodeItem) {
-        let _nodeKey = _nodeItem.key;
-
-        if (_nodeKey === item.key) {
-          j++;
-        } else {
-          if (!keyMap.hasOwnProperty(key)) {
-            moves.push(insert(i, item));
-          } else {
-            let nextKey = _nodes[j + 1].key;
-
-            if (nextKey === key) {
-              moves.push(remove(i));
-
-              _nodes.splice(j, 1);
-
-              j++;
-            } else {
-              moves.push(insert(i, item));
-            }
-          }
-        }
-      } else {
-        moves.push(insert(i, item));
-      }
-    }); // console.log(_nodes);
-    // console.log(moves);
-
-    return {
-      moves,
-      nodes: _nodes
-    };
-  }
-
-  function remove(i) {
-    return {
-      index: i,
-      type: REPLACE
-    };
-  }
-
-  function insert(i, item) {
-    return {
-      index: i,
-      item,
-      type: REORDER
-    };
-  }
-
-  function buildKeyMap(elements) {
-    let keyMap = {};
-    elements.forEach((item, i) => {
-      if (item.key) {
-        keyMap[item.key] = i;
-      }
-    });
-    return keyMap;
-  }
+  /**
+   * patch 根据 diff 的结果对差异进行更新
+   * @param {*} root HTML rootNode generated by vnode
+   * @param {*} patches
+   */
 
   function patch(root, patches) {
-    let steps = {
-      index: 0
-    };
     let index = 0;
-    patchNode(root, steps, patches, index);
+    patchNode(root, patches, index);
   }
 
-  function patchNode(node, steps, patches) {
-    let currentPatch = patches[steps.index];
+  function patchNode(node, patches, index) {
+    let currentPatch = patches[index] || [];
+    currentPatch.forEach((patch, i) => {
+      switch (patch.type) {
+        case INSERT:
+          // console.log(node, patch, 'insert');
+          // console.log(patch.node);
+          break;
 
-    if (currentPatch) {
-      applyPatches(node, currentPatch);
-    }
+        case REMOVE:
+          // console.log(node, patch, 'remove');
+          node.parentNode.removeChild(node);
+          break;
 
-    node.childNodes.forEach(child => {
-      steps.index++; // console.log(steps, child);
-
-      patchNode(child, steps, patches);
-    });
-  }
-
-  function applyPatches(node, patch) {
-    patch.forEach(item => {
-      switch (item.type) {
         case REPLACE:
-          // console.log(node, item.node, 'replace');
-          let newNode = utils.isString(item.node) ? document.createTextNode(item.node) : createElement(item.node);
+          // console.log(node, patch.node, 'replace');
+          let newNode = createElement(patch.node);
           node.parentNode.replaceChild(newNode, node);
           break;
 
         case REORDER:
-          // console.log(node, item.moves, 'reorder');
-          reorderChildren(node, item.moves);
+          // console.log(node, patch, 'reorder');
+          reorderChildren(node, patch.moves);
           break;
 
         case PROPS:
-          // console.log(node, item.props, 'props');
-          utils.setAttrs(node, item.props);
+          // console.log(node, patch.props, 'props');
+          utils.setAttrs(node, patch.props);
           break;
 
         case TEXT:
-          node.nodeValue = item.content;
-          break;
+          // console.log(node, patch, 'text');
+          // console.log(node.parentNode);
+          node.parentNode.textContent = patch.content; // utils.setAttrs(node, patch.props);
 
-        default:
-          throw new Error(`Unknown patch type ${item.type}`);
+          break;
       }
+    });
+    node.childNodes.forEach((node, i) => {
+      index++; // console.log(node);
+
+      patchNode(node, patches, i + index);
     });
   }
 
   function reorderChildren(node, moves) {
-    const nodeList = [].slice.call(node.childNodes);
-    let maps = {};
-    nodeList.forEach(item => {
-      if (node.nodeType === 1) {
-        let key = node.getAttribute('key');
+    // console.log(node.childNodes);
+    const nodeList = [].slice.call(node.childNodes); // console.log(nodeList);
 
-        if (key) {
-          maps[key] = node;
-        }
-      }
-    });
     moves.forEach(move => {
-      let index = move.index;
+      let index = move.index; // console.log(move.index);
+      // console.log(node);
 
       if (move.type === REPLACE) {
+        // console.log(index, nodeList[index], node.childNodes[index]);
         if (nodeList[index] === node.childNodes[index]) {
+          // console.log(move.index);
+          // console.log(nodeList[index], node.childNodes[index]);
           node.removeChild(node.childNodes[index]);
         }
 
         nodeList.splice(index, 1);
       } else if (move.type === REORDER) {
-        let insertNode = maps[move.item.key] ? maps[move.item.key].cloneNode(true) : typeof move.item === 'object' ? createElement(move.item) : document.createTextNode(move.item);
+        let insertNode = utils.isObject(move.item) ? createElement(move.item) : document.createTextNode(move.item); // console.log('insertNode: ');
+        // console.log(insertNode);
+        // console.log(node.childNodes[move.index]);
+
         nodeList.splice(index, 0, insertNode);
         node.insertBefore(insertNode, node.childNodes[index] || null);
       }
     });
   }
 
-  let vtree = createVNode('div', {
-    id: 'box'
-  }, createVNode('p', {
-    className: 'message',
+  // let vtree = createVNode('div', { id: 'box' },
+  //   createVNode('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
+  //   createVNode('ul', { className: 'lists' },
+  //     createVNode('li', null, 'Item 1'),
+  //     createVNode('li', null, 'Item 2'),
+  //     createVNode('li', null, 'Item 3')
+  //   )
+  // );
+  // 这里使用 @babel/plugin-transform-react-jsx 解析
+  // 只需实现 createVNode 即可，名称可以自定义
+
+  let vtree = createVNode("div", {
+    id: "box"
+  }, createVNode("p", {
+    className: "message",
     style: {
       color: '#36f'
     }
-  }, 'hello walker'), createVNode('ul', {
-    className: 'lists'
-  }, createVNode('li', null, 'Item 1'), createVNode('li', null, 'Item 2'), createVNode('li', null, 'Item 3')));
+  }, "hello walker"), createVNode("ul", {
+    className: "lists"
+  }, createVNode("li", null, "Item 1"), createVNode("li", null, "Item 2"), createVNode("li", null, "Item 3"))); // vtree = null;
+
   console.log('vtree: ', vtree);
   let rootNode = createElement(vtree);
   console.log('rootNode: ', rootNode);
-  render(rootNode, document.getElementById('app'));
+  render(rootNode, document.getElementById('app')); // let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
+  //   createVNode('h1', { id: 'title' }, 'This is title'),
+  //   createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
+  //   createVNode('ul', { className: 'lists new-lists' },
+  //     createVNode('li', null, 'Item 1'),
+  //     createVNode('li', null, 'Item 4'),
+  //   )
+  // );
+  // let newVtree = (
+  //   <div id="box" className="new-box">
+  //     <p style={{color: '#f80'}}>hello walker, nick to meet you</p>
+  //   </div>
+  // );
+
   /*
-  let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
-    createVNode('h1', { id: 'title' }, 'This is title'),
-    createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
-    createVNode('ul', { className: 'lists new-lists' },
-      createVNode('li', null, 'Item 1'),
-      createVNode('li', null, 'Item 4'),
-    )
+  let newVtree = (
+    <div id="box" className="new-box">
+      <h1 id="title">This is title</h1>
+      <p style={{color: '#f80'}}>hello walker, nick to meet you</p>
+      <ul className="lists new-lists">
+        <li>Item 1</li>
+        <li>Item 4</li>
+      </ul>
+    </div>
   );
 
   let patches = diff(vtree, newVtree);
@@ -410,27 +405,33 @@
     let items = [];
 
     for (let i = 0; i < count; i++) {
-      items.push(createVNode('li', null, `Item ${i}`));
+      // items.push(createVNode('li', null, `Item ${i}`));
+      items.push(createVNode("li", null, 'Item ' + i));
     }
 
     let color = count % 2 === 0 ? '#36f' : '#f80';
-    return createVNode('div', {
-      className: 'new-box',
-      id: 'box'
-    }, createVNode('h1', {
-      id: 'title'
-    }, 'This is title'), createVNode('p', {
+    return createVNode("div", {
+      id: "box",
+      className: "new-box"
+    }, createVNode("h1", {
+      id: "title"
+    }, "This is title"), "some text", createVNode("p", {
       style: {
         color: color
       }
-    }, `hello walker, nice to meet you ${count}`), createVNode('ul', {
-      className: 'lists new-lists'
-    }, ...items));
+    }, "hello walker, nick to meet you"), createVNode("ul", {
+      className: "lists new-lists"
+    }, items)); // return createVNode('div', { className: 'new-box', id: 'box' },
+    //   createVNode('h1', { id: 'title' }, 'This is title'),
+    //   createVNode('p', { style: { color: color } }, `hello walker, nice to meet you ${count}`),
+    //   createVNode('ul', { className: 'lists new-lists' }, ...items)
+    // );
   }
 
   function renderTest() {
     let newVtree = createVtree();
-    let patches = diff(vtree, newVtree);
+    let patches = diff(vtree, newVtree); // console.log(vtree, newVtree);
+
     console.log('patches: ', patches);
     patch(rootNode, patches);
     vtree = newVtree;

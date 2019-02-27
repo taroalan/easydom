@@ -1,5 +1,5 @@
 import utils from './utils';
-import { REMOVE, INSERT, PROPS, TEXT, REPLACE, REORDER,  } from './constants';
+import { REMOVE, INSERT, REPLACE, REORDER, PROPS, TEXT } from './constants';
 
 function diff(tree, newTree) {
   let index = 0;
@@ -13,10 +13,7 @@ function diff(tree, newTree) {
 function diffNode(node, newNode, index, patches) {
   let currentPatch = [];
 
-  if (!newNode) {
-    // console.log('!newNode ', node);
-    return;
-  }
+  console.log(`DIFF STEPS: ${index}: `, node, newNode);
 
   if (utils.isString(node) && utils.isString(newNode)) {
     if (node !== newNode) {
@@ -25,7 +22,7 @@ function diffNode(node, newNode, index, patches) {
         content: newNode
       });
     }
-  } else if (newNode.type === node.type && newNode.key === node.key) {
+  } else if (newNode && node && newNode.type === node.type && newNode.key === node.key) {
     let propsPatches = diffProps(node.props, newNode.props);
 
     if (Object.keys(propsPatches).length) {
@@ -44,7 +41,9 @@ function diffNode(node, newNode, index, patches) {
     });
   }
   // console.log('currentPatch: ', currentPatch);
-  // console.log('patches: ', index);
+
+  console.log('patches: ', index);
+
   if (currentPatch.length) {
     patches[index] = currentPatch;
   }
@@ -54,7 +53,7 @@ function diffProps(props, newProps) {
   let propsPatches = {};
 
   for (const key in props) {
-    if (newProps[key] !== props[key]) {
+    if (newProps.hasOwnProperty(key) && newProps[key] !== props[key]) {
       propsPatches[key] = newProps[key];
     }
   }
@@ -70,7 +69,7 @@ function diffProps(props, newProps) {
 
 function diffChildren(children, newChildren, index, patches, currentPatch) {
   let diffs = diffNodes(children, newChildren);
-  // console.log(diffs);
+  console.log(diffs);
   newChildren = diffs.nodes;
 
   if (diffs.moves.length) {
@@ -80,13 +79,17 @@ function diffChildren(children, newChildren, index, patches, currentPatch) {
     });
   }
 
+  // return;
+
   let leftNode = null;
   let currentNodeIndex = index;
   children.forEach((child, i) => {
     let newChild = newChildren[i];
-    currentNodeIndex = (leftNode && leftNode.count && false)
+    currentNodeIndex = (leftNode && leftNode.count)
       ? currentNodeIndex + leftNode.count + 1
       : currentNodeIndex + 1;
+    // currentNodeIndex++;
+    console.log('currentNodeIndex: ', currentNodeIndex);
     diffNode(child, newChild, currentNodeIndex, patches);
     leftNode = child;
   });

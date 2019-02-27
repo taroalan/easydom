@@ -2,6 +2,10 @@ import utils from './utils';
 
 
 function createElement(vnode) {
+  if (utils.isNull(vnode)) {
+    return document.createTextNode('');
+  }
+
   let { type, props, children } = vnode;
 
   // type 类型判断，按照 React 的套路，可能是html标签(String)、函数(Function)、React组件(Component)，
@@ -21,13 +25,13 @@ function createElement(vnode) {
   }
 
   // 常规写法:
-  children.forEach(child => {
-    el.appendChild(createElement(child));
-  });
+  // children.forEach(child => {
+  //   el.appendChild(createElement(child));
+  // });
 
   // 精简写法:
-  // let appendChild = el.appendChild.bind(el);
-  // children.map(createElement).map(appendChild);
+  let appendChild = el.appendChild.bind(el);
+  children.map(createElement).map(appendChild);
 
   return el;
 }

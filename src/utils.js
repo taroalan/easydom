@@ -4,7 +4,7 @@ utils.isType = (type, target) => {
   return Object.prototype.toString.call(target) === `[object ${type}]`;
 };
 
-['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error'].forEach(type => {
+['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error', 'Null'].forEach(type => {
   utils[`is${type}`] = (target) => utils.isType(type, target);
 });
 
