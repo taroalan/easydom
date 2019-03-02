@@ -19,15 +19,6 @@ function createVNode(type, props, ...children) {
     children
   };
 
-  // let count = 0;
-
-  // vnode.children.forEach((child) => {
-  //   count++;
-  // });
-
-  // // 标记当前节点下面有几个子节点
-  // vnode.count = count;
-
   return vnode;
 }
 

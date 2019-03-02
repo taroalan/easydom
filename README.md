@@ -2,7 +2,7 @@
 
 简单的虚拟 DOM 实现
 
-## Preview
+## 预览
 
 在线预览：[http://wangchi.github.io/vdom](http://wangchi.github.io/vdom)
 
@@ -13,15 +13,16 @@ npm i
 npm run dev
 ```
 
-Then visit `http://localhost:9001/` in your browser
+然后访问 `http://localhost:9001/` 即可。
 
 ## 原理
 
-分为四个部分：
-+ `createVNode` 创建 VNode
-+ `createElement` 把 VNode 转化为 HTML 元素
-+ `render` 把转化成 HTML 元素的 VNode append 到页面上
-+ `diff` 对比新旧 VNode 的差异
+实现部分主要分为以下五个函数：
+
++ `createVNode` 用于创建 Virtual DOM，用 JavaScript 对象来表示 DOM 结构
++ `createElement` 把 Virtual DOM 转化为 HTML 元素
++ `render` 把转化后的 HTML 元素渲染到页面上
++ `diff` 对比新旧 Virtual DOM 的差异，并作为结果返回
 + `patch` 把差异更新到真实 DOM 上
 
 关于 diff 这一块分为以下几种类型：
@@ -46,12 +47,14 @@ let vtree = (
   </div>
 );
 
+// 把虚拟 DOM 转化为 HTML 元素
 let rootNode = createElement(vtree);
 
+// 把转化后的 HTML 元素渲染到页面上
 render(rootNode, document.getElementById('app'));
 ```
 
-vdom 对比及局部更新
+vdom 对比及局部更新：
 
 ```js
 // 创建一个新的 vdom 树
