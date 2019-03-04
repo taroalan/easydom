@@ -1,41 +1,44 @@
 # vdom
 
-简单的虚拟 DOM 实现
+A simple virtual DOM implementation, include create vnode, diff and patch.
 
-## 预览
+English | [中文文档](./README_zh_cn.md)
 
-在线预览：[http://wangchi.github.io/vdom](http://wangchi.github.io/vdom)
+## Preview
 
-克隆到本地预览：
+Preview Online: [http://wangchi.github.io/vdom](_http://wangchi.github.io/vdom_)
+
+Preview Local: clone the repository then run the following commands
 
 ```bash
 npm i
 npm run dev
 ```
 
-然后访问 `http://localhost:9001/` 即可。
+Then visit `http://localhost:9001/` in your browser.
 
-## 原理
+## Introduction
 
-实现部分主要分为以下五个函数：
+Including the following five parts:
 
-+ `createVNode` 用于创建 Virtual DOM，用 JavaScript 对象来表示 DOM 结构
-+ `createElement` 把 Virtual DOM 转化为 HTML 元素
-+ `render` 把转化后的 HTML 元素渲染到页面上
-+ `diff` 对比新旧 Virtual DOM 的差异，并作为结果返回
-+ `patch` 把差异更新到真实 DOM 上
++ `createVNode` create a virtual dom tree
++ `createElement` parse virtual dom to HTML elements
++ `render` append HTML elements to page
++ `diff` diff the differents between old vnode tree and new vnode tree
++ `patch` update the patches to HTML elements
 
-关于 diff 这一块分为以下几种类型：
+About diff types:
 
-+ `TEXT` 文本替换
-+ `PROPS` 属性变更
-+ `REORDER` 元素位置的变更，用于处理子元素，然后进行递归处理
-+ `REPLACE` 整体替换（包含元素新增及删除）
++ `TEXT` replace text content
++ `PROPS` update attributes
++ `REORDER` record the order of child nodes, then replace or move
++ `REPLACE` replace elements
 
-代码示例：
+
+Examples:
 ```js
-// 这里使用 @babel/plugin-transform-react-jsx 解析
-// 只需实现 createVNode 即可，名称可以自定义
+// use @babel/plugin-transform-react-jsx to parse jsx
+// we should implement the createVNode function，the function will in your define
 let vtree = (
   <div id="box">
     <p className="message" style={{color: '#36f'}}>hello walker</p>
@@ -47,17 +50,17 @@ let vtree = (
   </div>
 );
 
-// 把虚拟 DOM 转化为 HTML 元素
+// compile vnode to HTML elements
 let rootNode = createElement(vtree);
 
-// 把转化后的 HTML 元素渲染到页面上
+// append the elements to page
 render(rootNode, document.getElementById('app'));
 ```
 
-vdom 对比及局部更新：
+Create a new vtree, then update the patches to HTML elements.
 
 ```js
-// 创建一个新的 vdom 树
+// create a new vtree use jsx
 let newVtree = (
   <div id="box" className="new-box">
     <h1 id="title">This is title</h1>
@@ -69,12 +72,12 @@ let newVtree = (
   </div>
 );
 
-// 对比差异
+// diff
 let patches = diff(vtree, newVtree);
 
 console.log('patches: ', patches);
 
-// 把差异更新到真实 DOM 上
+// update the patches to HTML elements
 patch(rootNode, patches);
 ```
 
