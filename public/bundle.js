@@ -90,16 +90,17 @@
     el.appendChild(vdom);
   }
 
-  // 删除节点
-  const REMOVE = 'REMOVE'; // 插入节点
+  // patchType 定义
+  // 插入节点
+  const INSERT = 'INSERT'; // 删除节点
 
-  const INSERT = 'INSERT'; // patchType 替换节点
+  const REMOVE = 'REMOVE'; // 替换节点
 
-  const REPLACE = 'REPLACE'; // patchType 重新排列节点
+  const REPLACE = 'REPLACE'; // 重新排列节点
 
-  const REORDER = 'REORDER'; // patchType 属性修改
+  const ORDER = 'ORDER'; // 属性修改
 
-  const PROPS = 'PROPS'; // patchType 文本修改
+  const PROPS = 'PROPS'; // 文本修改
 
   const TEXT = 'TEXT';
 
@@ -151,12 +152,13 @@
   }
 
   function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
-    // console.log('oldChildren, newChildren: ', oldChildren, newChildren);
-    let diffs = diffList(oldChildren, newChildren); // console.log(diffs);
+    console.log('oldChildren, newChildren: ', oldChildren, newChildren);
+    let diffs = diffList(oldChildren, newChildren);
+    console.log(diffs);
 
     if (diffs.moves.length) {
       currentPatch.push({
-        type: REORDER,
+        type: ORDER,
         moves: diffs.moves
       });
     }
@@ -175,29 +177,33 @@
 
   function diffList(oldList, newList) {
     let moves = [];
-    let nodes = [];
+    let nodes = []; // 遍历旧节点
+    // 观察新节点在同一个位置有什么变化
+
     oldList.forEach((item, i) => {
       let newItem = newList[i] || null;
       nodes.push(newItem);
-    }); // console.log(nodes);
-    // 去除 null
+    });
+    console.log(nodes); // 去除 null
+    // 如果新节点比旧节点数量减少了，就会出现null的情况
+    // 对于旧节点而言就是节点被 REMOVE 了
 
     nodes.forEach((node, i) => {
       if (node === null) {
         moves.push({
           index: i,
-          type: REPLACE
-        });
+          type: REMOVE
+        }); // nodes.splice(i, 1);
+      }
+    });
+    nodes.forEach((node, i) => {
+      if (node === null) {
         nodes.splice(i, 1);
       }
     });
 
     if (nodes.length === 1 && nodes[0] === null) {
       nodes = [];
-      moves.push({
-        index: nodes.length,
-        type: REPLACE
-      });
     }
 
     newList.forEach((item, i) => {
@@ -206,7 +212,7 @@
 
       if (nodeItem) ; else {
         moves.push({
-          type: 'REORDER',
+          type: ORDER,
           item,
           index: i
         });
@@ -259,17 +265,17 @@
           break;
 
         case REMOVE:
-          // console.log(node, patch, 'remove');
+          console.log(node, patch, 'remove');
           node.parentNode.removeChild(node);
           break;
 
         case REPLACE:
           // console.log(node, patch.node, 'replace');
-          let newNode = createElement(patch.node);
+          const newNode = createElement(patch.node);
           node.parentNode.replaceChild(newNode, node);
           break;
 
-        case REORDER:
+        case ORDER:
           // console.log(node, patch, 'reorder');
           reorderChildren(node, patch.moves);
           break;
@@ -300,18 +306,22 @@
 
     moves.forEach(move => {
       let index = move.index; // console.log(move.index);
-      // console.log(node);
+      // console.log(move);
 
-      if (move.type === REPLACE) {
+      if (move.type === REMOVE) {
         // console.log(index, nodeList[index], node.childNodes[index]);
-        if (nodeList[index] === node.childNodes[index]) {
-          // console.log(move.index);
-          // console.log(nodeList[index], node.childNodes[index]);
-          node.removeChild(node.childNodes[index]);
-        }
-
-        nodeList.splice(index, 1);
-      } else if (move.type === REORDER) {
+        // console.log(nodeList[index]);
+        node.removeChild(nodeList[index]); // if (nodeList[index] === node.childNodes[index]) {
+        //   // console.log(move.index);
+        //   // console.log(node, nodeList[index], node.childNodes[index]);
+        //   // if (node.childNodes[index]) {
+        //   // console.log(node.childNodes[index]);
+        //   // node.removeChild(node.childNodes[index]);
+        //   // }
+        // }
+        // nodeList.splice(index, 1);
+        // console.log(index, nodeList);
+      } else if (move.type === ORDER) {
         let insertNode = utils.isObject(move.item) ? createElement(move.item) : document.createTextNode(move.item); // console.log('insertNode: ');
         // console.log(insertNode);
         // console.log(node.childNodes[move.index]);

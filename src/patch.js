@@ -1,5 +1,5 @@
 import utils from './utils';
-import { REMOVE, INSERT, PROPS, TEXT, REPLACE, REORDER } from './constants';
+import { REMOVE, INSERT, PROPS, TEXT, REPLACE, ORDER } from './constants';
 import createElement from './create_element';
 
 /**
@@ -17,21 +17,21 @@ function patchNode(node, patches, index) {
   let currentPatch = patches[index] || [];
 
   currentPatch.forEach((patch, i) => {
-    switch(patch.type) {
+    switch (patch.type) {
       case INSERT:
         // console.log(node, patch, 'insert');
         // console.log(patch.node);
         break;
       case REMOVE:
-        // console.log(node, patch, 'remove');
+        console.log(node, patch, 'remove');
         node.parentNode.removeChild(node);
         break;
       case REPLACE:
         // console.log(node, patch.node, 'replace');
-        let newNode = createElement(patch.node);
+        const newNode = createElement(patch.node);
         node.parentNode.replaceChild(newNode, node);
         break;
-      case REORDER:
+      case ORDER:
         // console.log(node, patch, 'reorder');
         reorderChildren(node, patch.moves);
         break;
@@ -53,7 +53,6 @@ function patchNode(node, patches, index) {
     // console.log(node);
     patchNode(node, patches, i + index);
   });
-
 }
 
 function reorderChildren(node, moves) {
@@ -63,16 +62,25 @@ function reorderChildren(node, moves) {
   moves.forEach(move => {
     let index = move.index;
     // console.log(move.index);
-    // console.log(node);
-    if (move.type === REPLACE) {
+    // console.log(move);
+    if (move.type === REMOVE) {
       // console.log(index, nodeList[index], node.childNodes[index]);
-      if (nodeList[index] === node.childNodes[index]) {
-        // console.log(move.index);
-        // console.log(nodeList[index], node.childNodes[index]);
-        node.removeChild(node.childNodes[index]);
-      }
-      nodeList.splice(index, 1);
-    } else if (move.type === REORDER) {
+      // console.log(nodeList[index]);
+
+      node.removeChild(nodeList[index]);
+
+      // if (nodeList[index] === node.childNodes[index]) {
+      //   // console.log(move.index);
+      //   // console.log(node, nodeList[index], node.childNodes[index]);
+      //   // if (node.childNodes[index]) {
+      //   // console.log(node.childNodes[index]);
+      //   // node.removeChild(node.childNodes[index]);
+      //   // }
+      // }
+
+      // nodeList.splice(index, 1);
+      // console.log(index, nodeList);
+    } else if (move.type === ORDER) {
       let insertNode = utils.isObject(move.item)
         ? createElement(move.item)
         : document.createTextNode(move.item);

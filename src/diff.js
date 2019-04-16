@@ -1,5 +1,5 @@
 import utils from './utils';
-import { REMOVE, INSERT, PROPS, TEXT, REPLACE, REORDER,  } from './constants';
+import { INSERT, REMOVE, PROPS, TEXT, REPLACE, ORDER } from './constants';
 
 function diff(tree, newTree) {
   // console.log('diff');
@@ -16,35 +16,44 @@ function diffNode(oldNode, newNode, index, patches) {
   // console.log(`DIFF STEPS: ${index}: `, oldNode, newNode);
 
   if (!newNode) {
-    // 这种情况归并到 REORDER 里去处理
     // currentPatch.push({
-    //   type: REMOVE
+    //   type: REMOVE,
     // });
   } else if (utils.isString(oldNode) && utils.isString(newNode)) {
     if (oldNode !== newNode) {
       currentPatch.push({
         type: TEXT,
-        content: newNode
+        content: newNode,
       });
     }
-  } else if (oldNode && newNode && oldNode.type === newNode.type && oldNode.key === newNode.key) {
+  } else if (
+    oldNode &&
+    newNode &&
+    oldNode.type === newNode.type &&
+    oldNode.key === newNode.key
+  ) {
     let propsPatches = diffProps(oldNode.props, newNode.props);
 
     if (Object.keys(propsPatches).length) {
       currentPatch.push({
         type: PROPS,
-        props: propsPatches
+        props: propsPatches,
       });
     }
 
     // 对比子节点
     // todo
-    diffChildren(oldNode.children, newNode.children, index, patches, currentPatch);
-
+    diffChildren(
+      oldNode.children,
+      newNode.children,
+      index,
+      patches,
+      currentPatch
+    );
   } else {
     currentPatch.push({
       type: REPLACE,
-      node: newNode
+      node: newNode,
     });
   }
 
@@ -59,15 +68,15 @@ function diffNode(oldNode, newNode, index, patches) {
 }
 
 function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
-  // console.log('oldChildren, newChildren: ', oldChildren, newChildren);
+  console.log('oldChildren, newChildren: ', oldChildren, newChildren);
   let diffs = diffList(oldChildren, newChildren);
 
-  // console.log(diffs);
+  console.log(diffs);
 
   if (diffs.moves.length) {
     currentPatch.push({
-      type: REORDER,
-      moves: diffs.moves
+      type: ORDER,
+      moves: diffs.moves,
     });
   }
 
@@ -88,33 +97,37 @@ function diffList(oldList, newList) {
   let moves = [];
   let nodes = [];
 
+  // 遍历旧节点
+  // 观察新节点在同一个位置有什么变化
   oldList.forEach((item, i) => {
     let newItem = newList[i] || null;
     nodes.push(newItem);
   });
 
-  // console.log(nodes);
+  console.log(nodes);
 
   // 去除 null
+  // 如果新节点比旧节点数量减少了，就会出现null的情况
+  // 对于旧节点而言就是节点被 REMOVE 了
   nodes.forEach((node, i) => {
     if (node === null) {
       moves.push({
         index: i,
-        type: REPLACE
+        type: REMOVE,
       });
+      // nodes.splice(i, 1);
+    }
+  });
+
+  nodes.forEach((node, i) => {
+    if (node === null) {
       nodes.splice(i, 1);
     }
   });
 
-
   if (nodes.length === 1 && nodes[0] === null) {
     nodes = [];
-    moves.push({
-      index: nodes.length,
-      type: REPLACE
-    });
   }
-
 
   newList.forEach((item, i) => {
     item = utils.isArray(item) ? item[0] : item;
@@ -123,9 +136,9 @@ function diffList(oldList, newList) {
       // 有key的情况
     } else {
       moves.push({
-        type: 'REORDER',
+        type: ORDER,
         item,
-        index: i
+        index: i,
       });
     }
   });
@@ -135,8 +148,8 @@ function diffList(oldList, newList) {
 
   return {
     moves,
-    nodes
-  }
+    nodes,
+  };
 }
 
 function diffProps(props, newProps) {

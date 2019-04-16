@@ -1,10 +1,4 @@
-import {
-  createVNode,
-  createElement,
-  render,
-  diff,
-  patch
-} from './index';
+import { createVNode, createElement, render, diff, patch } from './index';
 
 // jsx 被 babel 编译后的格式
 // let vtree = createVNode('div', { id: 'box' },
@@ -20,7 +14,9 @@ import {
 // 只需实现 createVNode 即可，名称可以自定义
 let vtree = (
   <div id="box">
-    <p className="message" style={{color: '#36f'}}>hello walker</p>
+    <p className="message" style={{ color: '#36f' }}>
+      hello walker
+    </p>
     <ul className="lists">
       <li>Item 1</li>
       <li>Item 2</li>
@@ -38,7 +34,6 @@ console.log('rootNode: ', rootNode);
 
 render(rootNode, document.getElementById('app'));
 
-
 // let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
 //   createVNode('h1', { id: 'title' }, 'This is title'),
 //   createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
@@ -48,7 +43,6 @@ render(rootNode, document.getElementById('app'));
 //   )
 // );
 
-
 // let newVtree = (
 //   <div id="box" className="new-box">
 
@@ -56,7 +50,6 @@ render(rootNode, document.getElementById('app'));
 
 //   </div>
 // );
-
 
 /*
 let newVtree = (
@@ -77,7 +70,6 @@ console.log('patches: ', patches);
 patch(rootNode, patches);
 */
 
-
 // test jsx
 // let vdom1 = (
 //   <div class="box">
@@ -92,29 +84,24 @@ patch(rootNode, patches);
 // );
 // console.log(vdom1);
 
-
-
 let count = 0;
 
 function createVtree() {
-
   let items = [];
 
-  for(let i = 0; i < count; i++) {
+  for (let i = 0; i < count; i++) {
     // items.push(createVNode('li', null, `Item ${i}`));
-    items.push(<li>{ 'Item ' + i }</li>);
+    items.push(<li>{'Item ' + i}</li>);
   }
 
-  let color = (count % 2 === 0) ? '#36f': '#f80';
+  let color = count % 2 === 0 ? '#36f' : '#f80';
 
   return (
     <div id="box" className="new-box">
       <h1 id="title">This is title</h1>
       some text
-      <p style={{color: color}}>hello walker, nick to meet you</p>
-      <ul className="lists new-lists">
-        {items}
-      </ul>
+      <p style={{ color: color }}>hello walker, nick to meet you</p>
+      <ul className="lists new-lists">{items}</ul>
     </div>
   );
   // return createVNode('div', { className: 'new-box', id: 'box' },
@@ -133,18 +120,17 @@ function renderTest() {
   vtree = newVtree;
 }
 
-
-document.getElementById('btn-start').onclick = function () {
+document.getElementById('btn-start').onclick = function() {
   count = 0;
   renderTest();
 };
 
-document.getElementById('btn-add').onclick = function () {
+document.getElementById('btn-add').onclick = function() {
   count++;
   renderTest();
 };
 
-document.getElementById('btn-remove').onclick = function () {
+document.getElementById('btn-remove').onclick = function() {
   count--;
   if (count < 0) count = 0;
   renderTest();

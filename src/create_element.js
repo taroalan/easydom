@@ -1,6 +1,5 @@
 import utils from './utils';
 
-
 function createElement(vnode) {
   if (utils.isNull(vnode)) {
     return document.createTextNode('');

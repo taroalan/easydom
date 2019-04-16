@@ -5,7 +5,6 @@
 import utils from './utils';
 
 function createVNode(type, props, ...children) {
-
   // 嵌套 children 的特殊处理，二维变一维
   // jsx 被 babel-plugin-transform-react-jsx 编译后的一种情况
   if (children.length === 1 && utils.isArray(children[0])) {
@@ -16,7 +15,7 @@ function createVNode(type, props, ...children) {
     key: (props && props.key) || null,
     type: type,
     props: props ? props : {},
-    children
+    children,
   };
 
   return vnode;

@@ -4,10 +4,20 @@ utils.isType = (type, target) => {
   return Object.prototype.toString.call(target) === `[object ${type}]`;
 };
 
-['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error', 'Null'].forEach(type => {
-  utils[`is${type}`] = (target) => utils.isType(type, target);
+[
+  'String',
+  'Boolean',
+  'Number',
+  'Array',
+  'Function',
+  'Object',
+  'Date',
+  'RegExp',
+  'Error',
+  'Null',
+].forEach(type => {
+  utils[`is${type}`] = target => utils.isType(type, target);
 });
-
 
 // props 中关于 html 属性的处理
 // 暂时只处理一部分，仅供演示
@@ -15,7 +25,7 @@ utils.isType = (type, target) => {
 utils.setAttrs = (el, props) => {
   for (let key in props) {
     if (['id', 'href', 'value'].indexOf(key) !== -1) {
-      el.setAttribute(key, props[key])
+      el.setAttribute(key, props[key]);
     }
     if (key === 'className') {
       el.setAttribute('class', props['className']);

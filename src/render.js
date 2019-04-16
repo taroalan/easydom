@@ -1,5 +1,5 @@
 function render(vdom, el) {
-  el.appendChild(vdom)
+  el.appendChild(vdom);
 }
 
 export default render;
