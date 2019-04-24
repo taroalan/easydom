@@ -1,0 +1,21 @@
+{
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 9,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "allowImportExportEverywhere": false,
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "rules": {
+    "semi": ["error", "always"],
+    "strict": [2, "global"],
+    "no-console": 0,
+    "no-undef": 0
+  },
+  "env": {
+    "jest": true
+  }
+}

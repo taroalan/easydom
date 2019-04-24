@@ -1,17 +1,18 @@
-import { createVNode, createElement, render, diff, patch } from './index';
+import easydom from '../src/index';
+const { createElement } = easydom;
 
 // jsx 被 babel 编译后的格式
-// let vtree = createVNode('div', { id: 'box' },
-//   createVNode('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
-//   createVNode('ul', { className: 'lists' },
-//     createVNode('li', null, 'Item 1'),
-//     createVNode('li', null, 'Item 2'),
-//     createVNode('li', null, 'Item 3')
+// let vtree = createElement('div', { id: 'box' },
+//   createElement('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
+//   createElement('ul', { className: 'lists' },
+//     createElement('li', null, 'Item 1'),
+//     createElement('li', null, 'Item 2'),
+//     createElement('li', null, 'Item 3')
 //   )
 // );
 
 // 这里使用 @babel/plugin-transform-react-jsx 解析
-// 只需实现 createVNode 即可，名称可以自定义
+// 只需实现 createElement 即可，名称可以自定义
 let vtree = (
   <div id="box">
     <p className="message" style={{ color: '#36f' }}>
@@ -28,18 +29,18 @@ let vtree = (
 
 console.log('vtree: ', vtree);
 
-let rootNode = createElement(vtree);
+let rootNode = easydom.createDOM(vtree);
 
 console.log('rootNode: ', rootNode);
 
-render(rootNode, document.getElementById('app'));
+easydom.render(rootNode, document.getElementById('app'));
 
-// let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
-//   createVNode('h1', { id: 'title' }, 'This is title'),
-//   createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
-//   createVNode('ul', { className: 'lists new-lists' },
-//     createVNode('li', null, 'Item 1'),
-//     createVNode('li', null, 'Item 4'),
+// let newVtree = createElement('div', { className: 'new-box', id: 'box' },
+//   createElement('h1', { id: 'title' }, 'This is title'),
+//   createElement('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
+//   createElement('ul', { className: 'lists new-lists' },
+//     createElement('li', null, 'Item 1'),
+//     createElement('li', null, 'Item 4'),
 //   )
 // );
 
@@ -90,7 +91,7 @@ function createVtree() {
   let items = [];
 
   for (let i = 0; i < count; i++) {
-    // items.push(createVNode('li', null, `Item ${i}`));
+    // items.push(createElement('li', null, `Item ${i}`));
     items.push(<li>{'Item ' + i}</li>);
   }
 
@@ -104,19 +105,19 @@ function createVtree() {
       <ul className="lists new-lists">{items}</ul>
     </div>
   );
-  // return createVNode('div', { className: 'new-box', id: 'box' },
-  //   createVNode('h1', { id: 'title' }, 'This is title'),
-  //   createVNode('p', { style: { color: color } }, `hello walker, nice to meet you ${count}`),
-  //   createVNode('ul', { className: 'lists new-lists' }, ...items)
+  // return createElement('div', { className: 'new-box', id: 'box' },
+  //   createElement('h1', { id: 'title' }, 'This is title'),
+  //   createElement('p', { style: { color: color } }, `hello walker, nice to meet you ${count}`),
+  //   createElement('ul', { className: 'lists new-lists' }, ...items)
   // );
 }
 
 function renderTest() {
   let newVtree = createVtree();
-  let patches = diff(vtree, newVtree);
+  let patches = easydom.diff(vtree, newVtree);
   // console.log(vtree, newVtree);
   console.log('patches: ', patches);
-  patch(rootNode, patches);
+  easydom.patch(rootNode, patches);
   vtree = newVtree;
 }
 

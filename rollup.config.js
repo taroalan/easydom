@@ -5,18 +5,18 @@ const { uglify } = require('rollup-plugin-uglify');
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: production ? './src/index.js' : './src/example.js',
+  input: production ? './src/index.js' : './examples/index.js',
   output: {
-    name: 'vdom',
+    name: 'easydom',
     file: 'public/bundle.js',
     format: 'umd',
-    sourcemap: production ? false : true
+    sourcemap: production ? false : true,
   },
   plugins: [
     resolve(),
     babel({
-      exclude: 'node_modules/**'
+      exclude: 'node_modules/**',
     }),
-    production && uglify()
-  ]
-}
+    production && uglify(),
+  ],
+};

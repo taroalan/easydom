@@ -1,6 +1,6 @@
 import utils from './utils';
 import { REMOVE, INSERT, PROPS, TEXT, REPLACE, ORDER } from './constants';
-import createElement from './create_element';
+import createDOM from './createDOM';
 
 /**
  * patch 根据 diff 的结果对差异进行更新
@@ -28,7 +28,7 @@ function patchNode(node, patches, index) {
         break;
       case REPLACE:
         // console.log(node, patch.node, 'replace');
-        const newNode = createElement(patch.node);
+        const newNode = createDOM(patch.node);
         node.parentNode.replaceChild(newNode, node);
         break;
       case ORDER:
@@ -82,7 +82,7 @@ function reorderChildren(node, moves) {
       // console.log(index, nodeList);
     } else if (move.type === ORDER) {
       let insertNode = utils.isObject(move.item)
-        ? createElement(move.item)
+        ? createDOM(move.item)
         : document.createTextNode(move.item);
 
       // console.log('insertNode: ');

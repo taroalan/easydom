@@ -1,6 +1,6 @@
 import utils from './utils';
 
-function createElement(vnode) {
+function createDOM(vnode) {
   if (utils.isNull(vnode)) {
     return document.createTextNode('');
   }
@@ -25,14 +25,14 @@ function createElement(vnode) {
 
   // 常规写法:
   // children.forEach(child => {
-  //   el.appendChild(createElement(child));
+  //   el.appendChild(createDOM(child));
   // });
 
   // 精简写法:
   let appendChild = el.appendChild.bind(el);
-  children.map(createElement).map(appendChild);
+  children.map(createDOM).map(appendChild);
 
   return el;
 }
 
-export default createElement;
+export default createDOM;

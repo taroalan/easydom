@@ -1,6 +1,6 @@
 {
   "root": true,
-  "extends": ["eslint:recommended"],
+  "extends": ["eslint:recommended", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module",
@@ -8,6 +8,7 @@
       "jsx": true
     }
   },
+  "plugins": ["prettier"],
   "rules": {
     "indent": ["error", 2, { "SwitchCase": 1 }],
     "semi": ["error", "always"],

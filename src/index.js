@@ -1,7 +1,7 @@
-import createVNode from './create_vnode';
-import createElement from './create_element';
+import createElement from './createElement';
+import createDOM from './createDOM';
 import render from './render';
 import diff from './diff';
 import patch from './patch';
 
-export { createVNode, createElement, render, diff, patch };
+export default { createElement, createDOM, render, diff, patch };

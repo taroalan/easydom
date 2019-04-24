@@ -3,20 +3,22 @@
   factory();
 }(function () { 'use strict';
 
-  let utils = {};
+  var utils = {};
 
-  utils.isType = (type, target) => {
-    return Object.prototype.toString.call(target) === `[object ${type}]`;
+  utils.isType = function (type, target) {
+    return Object.prototype.toString.call(target) === "[object ".concat(type, "]");
   };
 
-  ['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error', 'Null'].forEach(type => {
-    utils[`is${type}`] = target => utils.isType(type, target);
+  ['String', 'Boolean', 'Number', 'Array', 'Function', 'Object', 'Date', 'RegExp', 'Error', 'Null'].forEach(function (type) {
+    utils["is".concat(type)] = function (target) {
+      return utils.isType(type, target);
+    };
   }); // props 中关于 html 属性的处理
   // 暂时只处理一部分，仅供演示
   // 注意 className、内联样式 style
 
-  utils.setAttrs = (el, props) => {
-    for (let key in props) {
+  utils.setAttrs = function (el, props) {
+    for (var key in props) {
       if (['id', 'href', 'value'].indexOf(key) !== -1) {
         el.setAttribute(key, props[key]);
       }
@@ -26,41 +28,43 @@
       }
 
       if (key === 'style') {
-        for (let p in props.style) {
+        for (var p in props.style) {
           el.style[p] = props.style[p];
         }
       }
     }
   };
 
-  // 参考 React 实现一个精简版的 createVNode 方法
+  // use @babel/plugin-transform-react-jsx to parse jsx
 
-  function createVNode(type, props, ...children) {
+  function createElement(type, props) {
+    for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      children[_key - 2] = arguments[_key];
+    }
+
     // 嵌套 children 的特殊处理，二维变一维
     // jsx 被 babel-plugin-transform-react-jsx 编译后的一种情况
     if (children.length === 1 && utils.isArray(children[0])) {
       children = !children[0].length ? [] : children[0];
     }
 
-    let vnode = {
+    var vnode = {
       key: props && props.key || null,
       type: type,
       props: props ? props : {},
-      children
+      children: children
     };
     return vnode;
   }
 
-  function createElement(vnode) {
+  function createDOM(vnode) {
     if (utils.isNull(vnode)) {
       return document.createTextNode('');
     }
 
-    let {
-      type,
-      props,
-      children
-    } = vnode; // type 类型判断，按照 React 的套路，可能是html标签(String)、函数(Function)、React组件(Component)，
+    var type = vnode.type,
+        props = vnode.props,
+        children = vnode.children; // type 类型判断，按照 React 的套路，可能是html标签(String)、函数(Function)、React组件(Component)，
     // 这里暂时只处理html标签及文本的情况
     // jsx 解析后文本为字符串(不再有子节点) children: ['text']
     // html标签会解析为对象(需要再去查看子节点) { type: 'div', props: { id: 'container' }, children: [...]}
@@ -69,20 +73,20 @@
       return document.createTextNode(vnode);
     }
 
-    let el = document.createElement(type);
+    var el = document.createElement(type);
     utils.setAttrs(el, props);
 
     if (!children) {
       return el;
     } // 常规写法:
     // children.forEach(child => {
-    //   el.appendChild(createElement(child));
+    //   el.appendChild(createDOM(child));
     // });
     // 精简写法:
 
 
-    let appendChild = el.appendChild.bind(el);
-    children.map(createElement).map(appendChild);
+    var appendChild = el.appendChild.bind(el);
+    children.map(createDOM).map(appendChild);
     return el;
   }
 
@@ -92,28 +96,28 @@
 
   // patchType 定义
   // 插入节点
-  const INSERT = 'INSERT'; // 删除节点
+  var INSERT = 'INSERT'; // 删除节点
 
-  const REMOVE = 'REMOVE'; // 替换节点
+  var REMOVE = 'REMOVE'; // 替换节点
 
-  const REPLACE = 'REPLACE'; // 重新排列节点
+  var REPLACE = 'REPLACE'; // 重新排列节点
 
-  const ORDER = 'ORDER'; // 属性修改
+  var ORDER = 'ORDER'; // 属性修改
 
-  const PROPS = 'PROPS'; // 文本修改
+  var PROPS = 'PROPS'; // 文本修改
 
-  const TEXT = 'TEXT';
+  var TEXT = 'TEXT';
 
   function diff(tree, newTree) {
     // console.log('diff');
-    let index = 0;
-    let patches = {};
+    var index = 0;
+    var patches = {};
     return diffNode(tree, newTree, index, patches);
   }
 
   function diffNode(oldNode, newNode, index, patches) {
     // let patches = {};
-    let currentPatch = []; // console.log(`DIFF STEPS: ${index}: `, oldNode, newNode);
+    var currentPatch = []; // console.log(`DIFF STEPS: ${index}: `, oldNode, newNode);
 
     if (!newNode) ; else if (utils.isString(oldNode) && utils.isString(newNode)) {
       if (oldNode !== newNode) {
@@ -123,7 +127,7 @@
         });
       }
     } else if (oldNode && newNode && oldNode.type === newNode.type && oldNode.key === newNode.key) {
-      let propsPatches = diffProps(oldNode.props, newNode.props);
+      var propsPatches = diffProps(oldNode.props, newNode.props);
 
       if (Object.keys(propsPatches).length) {
         currentPatch.push({
@@ -153,7 +157,7 @@
 
   function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
     console.log('oldChildren, newChildren: ', oldChildren, newChildren);
-    let diffs = diffList(oldChildren, newChildren);
+    var diffs = diffList(oldChildren, newChildren);
     console.log(diffs);
 
     if (diffs.moves.length) {
@@ -166,8 +170,8 @@
     newChildren = diffs.nodes;
 
     for (var i = 0; i < oldChildren.length || i < newChildren.length; i++) {
-      let oldNode = oldChildren[i];
-      let newNode = newChildren[i]; // console.log(`i -- index -- count : ${i}-${index}-${count}`);
+      var oldNode = oldChildren[i];
+      var newNode = newChildren[i]; // console.log(`i -- index -- count : ${i}-${index}-${count}`);
       // count++;
 
       index++;
@@ -176,19 +180,19 @@
   }
 
   function diffList(oldList, newList) {
-    let moves = [];
-    let nodes = []; // 遍历旧节点
+    var moves = [];
+    var nodes = []; // 遍历旧节点
     // 观察新节点在同一个位置有什么变化
 
-    oldList.forEach((item, i) => {
-      let newItem = newList[i] || null;
+    oldList.forEach(function (item, i) {
+      var newItem = newList[i] || null;
       nodes.push(newItem);
     });
     console.log(nodes); // 去除 null
     // 如果新节点比旧节点数量减少了，就会出现null的情况
     // 对于旧节点而言就是节点被 REMOVE 了
 
-    nodes.forEach((node, i) => {
+    nodes.forEach(function (node, i) {
       if (node === null) {
         moves.push({
           index: i,
@@ -196,7 +200,7 @@
         }); // nodes.splice(i, 1);
       }
     });
-    nodes.forEach((node, i) => {
+    nodes.forEach(function (node, i) {
       if (node === null) {
         nodes.splice(i, 1);
       }
@@ -206,14 +210,14 @@
       nodes = [];
     }
 
-    newList.forEach((item, i) => {
+    newList.forEach(function (item, i) {
       item = utils.isArray(item) ? item[0] : item;
-      let nodeItem = nodes[i];
+      var nodeItem = nodes[i];
 
       if (nodeItem) ; else {
         moves.push({
           type: ORDER,
-          item,
+          item: item,
           index: i
         });
       }
@@ -221,23 +225,23 @@
     // console.log('diffList moves', moves);
 
     return {
-      moves,
-      nodes
+      moves: moves,
+      nodes: nodes
     };
   }
 
   function diffProps(props, newProps) {
-    let propsPatches = {};
+    var propsPatches = {};
 
-    for (const key in props) {
+    for (var key in props) {
       if (newProps.hasOwnProperty(key) && newProps[key] !== props[key]) {
         propsPatches[key] = newProps[key];
       }
     }
 
-    for (const key in newProps) {
-      if (!props.hasOwnProperty(key)) {
-        propsPatches[key] = newProps[key];
+    for (var _key in newProps) {
+      if (!props.hasOwnProperty(_key)) {
+        propsPatches[_key] = newProps[_key];
       }
     }
 
@@ -251,13 +255,13 @@
    */
 
   function patch(root, patches) {
-    let index = 0;
+    var index = 0;
     patchNode(root, patches, index);
   }
 
   function patchNode(node, patches, index) {
-    let currentPatch = patches[index] || [];
-    currentPatch.forEach((patch, i) => {
+    var currentPatch = patches[index] || [];
+    currentPatch.forEach(function (patch, i) {
       switch (patch.type) {
         case INSERT:
           // console.log(node, patch, 'insert');
@@ -271,7 +275,7 @@
 
         case REPLACE:
           // console.log(node, patch.node, 'replace');
-          const newNode = createElement(patch.node);
+          var newNode = createDOM(patch.node);
           node.parentNode.replaceChild(newNode, node);
           break;
 
@@ -293,7 +297,7 @@
           break;
       }
     });
-    node.childNodes.forEach((node, i) => {
+    node.childNodes.forEach(function (node, i) {
       index++; // console.log(node);
 
       patchNode(node, patches, i + index);
@@ -302,10 +306,10 @@
 
   function reorderChildren(node, moves) {
     // console.log(node.childNodes);
-    const nodeList = [].slice.call(node.childNodes); // console.log(nodeList);
+    var nodeList = [].slice.call(node.childNodes); // console.log(nodeList);
 
-    moves.forEach(move => {
-      let index = move.index; // console.log(move.index);
+    moves.forEach(function (move) {
+      var index = move.index; // console.log(move.index);
       // console.log(move);
 
       if (move.type === REMOVE) {
@@ -322,7 +326,7 @@
         // nodeList.splice(index, 1);
         // console.log(index, nodeList);
       } else if (move.type === ORDER) {
-        let insertNode = utils.isObject(move.item) ? createElement(move.item) : document.createTextNode(move.item); // console.log('insertNode: ');
+        var insertNode = utils.isObject(move.item) ? createDOM(move.item) : document.createTextNode(move.item); // console.log('insertNode: ');
         // console.log(insertNode);
         // console.log(node.childNodes[move.index]);
 
@@ -332,37 +336,46 @@
     });
   }
 
-  // let vtree = createVNode('div', { id: 'box' },
-  //   createVNode('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
-  //   createVNode('ul', { className: 'lists' },
-  //     createVNode('li', null, 'Item 1'),
-  //     createVNode('li', null, 'Item 2'),
-  //     createVNode('li', null, 'Item 3')
+  var easydom = {
+    createElement: createElement,
+    createDOM: createDOM,
+    render: render,
+    diff: diff,
+    patch: patch
+  };
+
+  var createElement$1 = easydom.createElement; // jsx 被 babel 编译后的格式
+  // let vtree = createElement('div', { id: 'box' },
+  //   createElement('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
+  //   createElement('ul', { className: 'lists' },
+  //     createElement('li', null, 'Item 1'),
+  //     createElement('li', null, 'Item 2'),
+  //     createElement('li', null, 'Item 3')
   //   )
   // );
   // 这里使用 @babel/plugin-transform-react-jsx 解析
-  // 只需实现 createVNode 即可，名称可以自定义
+  // 只需实现 createElement 即可，名称可以自定义
 
-  let vtree = createVNode("div", {
+  var vtree = createElement$1("div", {
     id: "box"
-  }, createVNode("p", {
+  }, createElement$1("p", {
     className: "message",
     style: {
       color: '#36f'
     }
-  }, "hello walker"), createVNode("ul", {
+  }, "hello walker"), createElement$1("ul", {
     className: "lists"
-  }, createVNode("li", null, "Item 1"), createVNode("li", null, "Item 2"), createVNode("li", null, "Item 3"))); // vtree = null;
+  }, createElement$1("li", null, "Item 1"), createElement$1("li", null, "Item 2"), createElement$1("li", null, "Item 3"))); // vtree = null;
 
   console.log('vtree: ', vtree);
-  let rootNode = createElement(vtree);
+  var rootNode = easydom.createDOM(vtree);
   console.log('rootNode: ', rootNode);
-  render(rootNode, document.getElementById('app')); // let newVtree = createVNode('div', { className: 'new-box', id: 'box' },
-  //   createVNode('h1', { id: 'title' }, 'This is title'),
-  //   createVNode('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
-  //   createVNode('ul', { className: 'lists new-lists' },
-  //     createVNode('li', null, 'Item 1'),
-  //     createVNode('li', null, 'Item 4'),
+  easydom.render(rootNode, document.getElementById('app')); // let newVtree = createElement('div', { className: 'new-box', id: 'box' },
+  //   createElement('h1', { id: 'title' }, 'This is title'),
+  //   createElement('p', { style: { color: '#f80' } }, 'hello walker, nice to meet you'),
+  //   createElement('ul', { className: 'lists new-lists' },
+  //     createElement('li', null, 'Item 1'),
+  //     createElement('li', null, 'Item 4'),
   //   )
   // );
   // let newVtree = (
@@ -403,41 +416,41 @@
   // );
   // console.log(vdom1);
 
-  let count = 0;
+  var count = 0;
 
   function createVtree() {
-    let items = [];
+    var items = [];
 
-    for (let i = 0; i < count; i++) {
-      // items.push(createVNode('li', null, `Item ${i}`));
-      items.push(createVNode("li", null, 'Item ' + i));
+    for (var i = 0; i < count; i++) {
+      // items.push(createElement('li', null, `Item ${i}`));
+      items.push(createElement$1("li", null, 'Item ' + i));
     }
 
-    let color = count % 2 === 0 ? '#36f' : '#f80';
-    return createVNode("div", {
+    var color = count % 2 === 0 ? '#36f' : '#f80';
+    return createElement$1("div", {
       id: "box",
       className: "new-box"
-    }, createVNode("h1", {
+    }, createElement$1("h1", {
       id: "title"
-    }, "This is title"), "some text", createVNode("p", {
+    }, "This is title"), "some text", createElement$1("p", {
       style: {
         color: color
       }
-    }, "hello walker, nick to meet you"), createVNode("ul", {
+    }, "hello walker, nick to meet you"), createElement$1("ul", {
       className: "lists new-lists"
-    }, items)); // return createVNode('div', { className: 'new-box', id: 'box' },
-    //   createVNode('h1', { id: 'title' }, 'This is title'),
-    //   createVNode('p', { style: { color: color } }, `hello walker, nice to meet you ${count}`),
-    //   createVNode('ul', { className: 'lists new-lists' }, ...items)
+    }, items)); // return createElement('div', { className: 'new-box', id: 'box' },
+    //   createElement('h1', { id: 'title' }, 'This is title'),
+    //   createElement('p', { style: { color: color } }, `hello walker, nice to meet you ${count}`),
+    //   createElement('ul', { className: 'lists new-lists' }, ...items)
     // );
   }
 
   function renderTest() {
-    let newVtree = createVtree();
-    let patches = diff(vtree, newVtree); // console.log(vtree, newVtree);
+    var newVtree = createVtree();
+    var patches = easydom.diff(vtree, newVtree); // console.log(vtree, newVtree);
 
     console.log('patches: ', patches);
-    patch(rootNode, patches);
+    easydom.patch(rootNode, patches);
     vtree = newVtree;
   }
 
