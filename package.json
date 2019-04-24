@@ -9,7 +9,7 @@
     "dev:rollup": "rollup -c -w",
     "build": "rollup --c ./rollup.prod.config.js",
     "test": "jest",
-    "coveralls": "cat coverage/coverage-final.json | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "author": "Wang Chi",
   "license": "MIT",

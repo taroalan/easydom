@@ -6,7 +6,7 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/'],
-  coverageReporters: ['json'],
+  coverageReporters: ['lcov'],
   testEnvironment: 'jest-environment-jsdom',
   testRegex: ['(/test/.*\\.spec\\.js)$'],
 };
