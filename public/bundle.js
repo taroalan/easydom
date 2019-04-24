@@ -344,7 +344,10 @@
     patch: patch
   };
 
-  var createElement$1 = easydom.createElement; // jsx 被 babel 编译后的格式
+  // const easydom = require('../dist/easydom-cjs');
+
+  var createElement$1 = easydom.createElement;
+  console.log(easydom); // jsx 被 babel 编译后的格式
   // let vtree = createElement('div', { id: 'box' },
   //   createElement('p', { className: 'message', style: { color: '#36f' } }, 'hello walker'),
   //   createElement('ul', { className: 'lists' },

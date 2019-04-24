@@ -1,5 +1,6 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
+const commonjs = require('rollup-plugin-commonjs');
 const { uglify } = require('rollup-plugin-uglify');
 
 const production = !process.env.ROLLUP_WATCH;
@@ -15,8 +16,9 @@ export default {
   plugins: [
     resolve(),
     babel({
-      exclude: 'node_modules/**',
+      exclude: /node_modules/,
     }),
+    commonjs(),
     production && uglify(),
   ],
 };

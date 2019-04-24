@@ -1,5 +1,9 @@
 import easydom from '../src/index';
+// import easydom from '../dist/easydom.js';
+// const easydom = require('../dist/easydom-cjs');
 const { createElement } = easydom;
+
+console.log(easydom);
 
 // jsx 被 babel 编译后的格式
 // let vtree = createElement('div', { id: 'box' },

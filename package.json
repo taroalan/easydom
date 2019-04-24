@@ -1,13 +1,13 @@
 {
   "name": "easydom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple visual DOM implementation",
-  "main": "./src/index.js",
+  "main": "./dist/easydom.js",
   "scripts": {
     "dev": "npm-run-all --parallel dev:**",
     "dev:serve": "serve ./public --listen 9001",
     "dev:rollup": "rollup -c -w",
-    "build": "rollup -c",
+    "build": "rollup --c ./rollup.prod.config.js",
     "test": "jest"
   },
   "author": "Wang Chi",
@@ -22,11 +22,14 @@
     "npm-run-all": "^4.1.5",
     "rollup": "^1.2.3",
     "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-uglify": "^6.0.2",
     "serve": "^10.1.2"
   },
   "dependencies": {
+    "coveralls": "^3.0.3",
+    "easydom": "^0.1.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1"
   }
