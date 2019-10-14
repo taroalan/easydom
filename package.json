@@ -11,7 +11,11 @@
     "test": "jest",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
-  "author": "Wang Chi",
+  "engines": {
+    "node": ">=8.16.1"
+  },
+  "repository": "git@github.com:bluesdari/easydom.git",
+  "author": "Blues Dari <bluesdari@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.3.3",
