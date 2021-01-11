@@ -11,4 +11,4 @@ test
 .travis.yml
 jest.config.js
 rollup.config.js
-rollup.prog.config.js
+rollup.prod.config.js
