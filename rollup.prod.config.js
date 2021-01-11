@@ -9,14 +9,14 @@ export default {
     {
       name: 'easydom',
       file: 'dist/easydom.js',
-      format: 'es',
+      format: 'cjs',
       sourcemap: false,
       exports: 'auto',
     },
     {
       name: 'easydom',
-      file: 'dist/easydom-cjs.js',
-      format: 'cjs',
+      file: 'dist/easydom.es.js',
+      format: 'es',
       sourcemap: false,
       exports: 'auto',
     },
