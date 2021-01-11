@@ -1,19 +1,19 @@
 # easydom
 
 [![Build Status][travis-image]][travis-url]
-[![Coverage Status](https://coveralls.io/repos/github/bluesdari/easydom/badge.svg?branch=master)](https://coveralls.io/github/bluesdari/easydom?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/wangchi/easydom/badge.svg?branch=master)](https://coveralls.io/github/wangchi/easydom?branch=master)
 [![npm version][npm-version-image]](npm-url)
 [![npm downloads][npm-download-image]][npm-url]
 
 [npm-version-image]: https://img.shields.io/npm/v/easydom.svg?style=flat-square
 [npm-download-image]: https://img.shields.io/npm/dm/easydom.svg?style=flat-square
 [npm-url]: https://www.npmjs.com/package/easydom
-[travis-image]: https://travis-ci.org/bluesdari/easydom.svg?branch=master
-[travis-url]: https://travis-ci.org/bluesdari/easydom
+[travis-image]: https://travis-ci.org/wangchi/easydom.svg?branch=master
+[travis-url]: https://travis-ci.org/wangchi/easydom
 
 A simple virtual DOM implementation, include create vnode, diff and patch.
 
-Preview Online: [https://bluesdari.github.io/easydom/](https://bluesdari.github.io/easydom/)
+Preview Online: [https://wangchi.github.io/easydom/](https://wangchi.github.io/easydom/)
 
 English | [中文文档](./README_zh_cn.md)
 

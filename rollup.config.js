@@ -1,7 +1,7 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
-const { uglify } = require('rollup-plugin-uglify');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const { babel } = require('@rollup/plugin-babel');
+const commonjs = require('@rollup/plugin-commonjs');
+const { terser } = require('rollup-plugin-terser');
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -11,14 +11,13 @@ export default {
     name: 'easydom',
     file: 'public/bundle.js',
     format: 'umd',
-    sourcemap: production ? false : true,
+    sourcemap: true,
   },
   plugins: [
-    resolve(),
+    nodeResolve(),
     babel({
       exclude: /node_modules/,
     }),
     commonjs(),
-    production && uglify(),
   ],
 };

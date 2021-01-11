@@ -1,6 +1,7 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const { babel } = require('@rollup/plugin-babel');
+const commonjs = require('@rollup/plugin-commonjs');
+const { terser } = require('rollup-plugin-terser');
 
 export default {
   input: './src/index.js',
@@ -10,19 +11,22 @@ export default {
       file: 'dist/easydom.js',
       format: 'es',
       sourcemap: false,
+      exports: 'auto',
     },
     {
       name: 'easydom',
       file: 'dist/easydom-cjs.js',
       format: 'cjs',
       sourcemap: false,
+      exports: 'auto',
     },
   ],
   plugins: [
-    resolve(),
+    nodeResolve(),
     babel({
       exclude: /node_modules/,
     }),
     commonjs(),
+    terser(),
   ],
 };
